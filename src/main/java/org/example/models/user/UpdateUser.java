@@ -1,9 +1,9 @@
 package org.example.models.user;
 
 public class UpdateUser {
-    public final String email;
-    public final String password;
-    public final String name;
+    private String email;
+    private String password;
+    private String name;
 
     public UpdateUser(String email,String password, String name) {
         this.email = email;

@@ -1,13 +1,14 @@
-package orderTests.positiveTests;
+package ordertests.positive;
 
 import io.qameta.allure.junit4.DisplayName;
-import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import org.example.constantsAPI.EndPoints;
+import org.example.clients.OrderClient;
+import org.example.clients.UserClient;
+
 import org.example.generators.GenerateUserData;
 import org.example.models.order.CreateOrder;
 import org.example.models.user.CreateUser;
-import org.example.models.user.DeleteUser;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +16,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.restassured.RestAssured.given;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 
 
@@ -26,26 +27,20 @@ public class GetOrderTest {
     public String authorizationToken;
 
     @Before
-    public void createNewUser(){
-        RestAssured.baseURI = EndPoints.BASE_URL;
+    public void createNewUserAndOrder(){
+
         CreateUser createdUser = new CreateUser(email,password, name);
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(createdUser)
-                .when()
-                .post(EndPoints.REGISTER);
+        Response response = UserClient.register(createdUser);
         authorizationToken = response.then().extract().body().path("accessToken");
 
+        Response ingredientsList = OrderClient.getIngredients();
 
-        String bun = given()
-                .get(EndPoints.INGREDIENTS)
+
+        String bun = ingredientsList
                 .then().extract().body().path("data[0]._id");
-        String main = given()
-                .get(EndPoints.INGREDIENTS)
+        String main = ingredientsList
                 .then().extract().body().path("data[1]._id");
-        String sauce = given()
-                .get(EndPoints.INGREDIENTS)
+        String sauce = ingredientsList
                 .then().extract().body().path("data[4]._id");
 
 
@@ -56,13 +51,7 @@ public class GetOrderTest {
 
 
         CreateOrder order = new CreateOrder(ingredients);
-        given()
-                .header("Content-type", "application/json")
-                .header("Authorization", authorizationToken)
-                .and()
-                .body(order)
-                .when()
-                .post(EndPoints.ORDERS);
+        OrderClient.createOrderAuthorized(authorizationToken, order);
     }
 
 
@@ -70,9 +59,7 @@ public class GetOrderTest {
     @DisplayName("Получение заказа")
     public void getOrdersTest(){
 
-        Response response = given()
-                .header("Authorization", authorizationToken)
-                .get(EndPoints.ORDERS);
+        Response response = OrderClient.getOrdersByToken(authorizationToken);
         response.then().assertThat()
                 .statusCode(200);
         response.then().assertThat().body("success", equalTo(true));
@@ -80,12 +67,8 @@ public class GetOrderTest {
 
     }
     @After
-    public void DeleteUser()  {
-        DeleteUser delete = new DeleteUser(email,password);
-        given()
-                .header("Authorization", authorizationToken)
-                .body(delete)
-                .delete(EndPoints.USER);
+    public void deleteUser()  {
+        UserClient.deleteUser(authorizationToken);
 
     }
 

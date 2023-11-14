@@ -6,6 +6,8 @@ public class CreateUser {
     private String name;
 
 
+
+
     public CreateUser(String email, String password, String name) {
         this.email = email;
         this.password = password;

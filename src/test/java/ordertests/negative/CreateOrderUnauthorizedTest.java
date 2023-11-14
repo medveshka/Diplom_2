@@ -1,39 +1,36 @@
-package orderTests.negativeTests;
+package ordertests.negative;
 
 import io.qameta.allure.junit4.DisplayName;
-import io.restassured.RestAssured;
+
 import io.restassured.response.Response;
-import org.example.constantsAPI.EndPoints;
+import org.example.clients.OrderClient;
+
 import org.example.models.order.CreateOrder;
-import org.junit.Before;
+
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.restassured.RestAssured.given;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 
 
 public class CreateOrderUnauthorizedTest {
 
-    @Before
-    public void createNewUser() {
-        RestAssured.baseURI = EndPoints.BASE_URL;
-    }
 
 
     @Test
-    @DisplayName("Создание заказа c авторизаций и списком ингредиентов")
-    public void createOrderIngredientsAuthorizedUser(){
-        String bun = given()
-                .get(EndPoints.INGREDIENTS)
+    @DisplayName("Создание заказа c без авторизации и списком ингредиентов")
+    public void createOrderIngredientsUnauthorizedUser(){
+        Response ingredientsList = OrderClient.getIngredients();
+
+
+        String bun = ingredientsList
                 .then().extract().body().path("data[0]._id");
-        String main = given()
-                .get(EndPoints.INGREDIENTS)
+        String main = ingredientsList
                 .then().extract().body().path("data[1]._id");
-        String sauce = given()
-                .get(EndPoints.INGREDIENTS)
+        String sauce = ingredientsList
                 .then().extract().body().path("data[4]._id");
 
 
@@ -44,12 +41,7 @@ public class CreateOrderUnauthorizedTest {
 
 
         CreateOrder order = new CreateOrder(ingredients);
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(order)
-                .when()
-                .post(EndPoints.ORDERS);
+        Response response = OrderClient.createOrderUnauthorized(order);
         response.then().assertThat()
                 .statusCode(401);
         response.then().assertThat().body("success", equalTo(true));

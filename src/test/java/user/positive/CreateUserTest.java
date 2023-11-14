@@ -1,18 +1,17 @@
-package userTests.positiveTests;
+package user.positive;
 
-import io.restassured.RestAssured;
+
 import io.restassured.response.Response;
-import static io.restassured.RestAssured.given;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import io.qameta.allure.junit4.DisplayName;
 
+import org.example.clients.UserClient;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.example.generators.GenerateUserData;
-import org.example.constantsAPI.EndPoints;
 import org.example.models.user.CreateUser;
-import org.example.models.user.DeleteUser;
+
 
 public class CreateUserTest {
     public String email = GenerateUserData.generateEmail();
@@ -20,21 +19,13 @@ public class CreateUserTest {
     public String name = GenerateUserData.generateName();
     public String authorizationToken;
 
-    @Before
-    public void setUp()  {
-        RestAssured.baseURI = EndPoints.BASE_URL;
-    }
+
 
     @Test
     @DisplayName("Создание нового пользователя")
     public void createNewUser(){
         CreateUser createdUser = new CreateUser(email,password, name);
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(createdUser)
-                .when()
-                .post(EndPoints.REGISTER);
+        Response response = UserClient.register(createdUser);
         response.then().assertThat()
                 .statusCode(200);
         response.then().assertThat().body("success", equalTo(true));
@@ -44,12 +35,10 @@ public class CreateUserTest {
 
 
     @After
-    public void DeleteUser()  {
-        DeleteUser delete = new DeleteUser(email,password);
-        given()
-                .header("Authorization", authorizationToken)
-                .body(delete)
-                .delete(EndPoints.USER);
+    public void deleteUser()  {
+
+        UserClient.deleteUser(authorizationToken);
+
 
     }
 }

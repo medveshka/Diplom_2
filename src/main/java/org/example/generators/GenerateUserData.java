@@ -4,7 +4,7 @@ import com.github.javafaker.Faker;
 
 import java.util.Locale;
 
-public class generateUserData {
+public class GenerateUserData {
 
 
     public static String generateName() {

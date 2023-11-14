@@ -1,8 +1,8 @@
 package org.example.models.user;
 
 public class DeleteUser {
-    public final String email;
-    public final String password;
+    private String email;
+    private String password;
 
 
     public DeleteUser(String email, String password) {

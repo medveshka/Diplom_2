@@ -1,19 +1,18 @@
-package userTests.positiveTests;
+package user.positive;
 
 import io.qameta.allure.junit4.DisplayName;
-import io.restassured.RestAssured;
+
 import io.restassured.response.Response;
-import org.example.constantsAPI.EndPoints;
+import org.example.clients.UserClient;
+
 import org.example.generators.GenerateUserData;
 import org.example.models.user.CreateUser;
-import org.example.models.user.DeleteUser;
+
 
 import org.example.models.user.LogInUser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 public class LogInUserTest {
@@ -24,14 +23,8 @@ public class LogInUserTest {
 
     @Before
     public void setUp()  {
-        RestAssured.baseURI = EndPoints.BASE_URL;
         CreateUser createdUser = new CreateUser(email,password, name);
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(createdUser)
-                .when()
-                .post(EndPoints.REGISTER);
+        Response response = UserClient.register(createdUser);
         response.then().assertThat()
                 .statusCode(200);
         response.then().assertThat().body("success", equalTo(true));
@@ -42,13 +35,8 @@ public class LogInUserTest {
     @Test
     @DisplayName("Логин под существующим пользователем")
     public void logInUser(){
-        LogInUser LoggedInUser = new LogInUser(email,password);
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(LoggedInUser)
-                .when()
-                .post(EndPoints.LOGIN);
+        LogInUser loggedInUser = new LogInUser(email,password);
+        Response response = UserClient.login(loggedInUser);
         response.then().assertThat()
                 .statusCode(200);
         response.then().assertThat().body("success", equalTo(true));
@@ -58,12 +46,8 @@ public class LogInUserTest {
 
 
     @After
-    public void DeleteUser()  {
-        DeleteUser delete = new DeleteUser(email,password);
-        given()
-                .header("Authorization", authorizationToken)
-                .body(delete)
-                .delete(EndPoints.USER);
+    public void deleteUser()  {
+        UserClient.deleteUser(authorizationToken);
 
     }
 

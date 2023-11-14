@@ -1,8 +1,10 @@
-package orderTests.negativeTests;
+package ordertests.negative;
 
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import org.example.clients.OrderClient;
+import org.example.clients.UserClient;
 import org.example.constantsAPI.EndPoints;
 import org.example.generators.GenerateUserData;
 import org.example.models.order.CreateOrder;
@@ -29,12 +31,7 @@ public class CreateOrderNoIngredientsTest {
     public void createNewUser(){
         RestAssured.baseURI = EndPoints.BASE_URL;
         CreateUser createdUser = new CreateUser(email,password, name);
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(createdUser)
-                .when()
-                .post(EndPoints.REGISTER);
+        Response response = UserClient.register(createdUser);
         response.then().assertThat()
                 .statusCode(200);
         response.then().assertThat().body("success", equalTo(true));
@@ -52,24 +49,14 @@ public class CreateOrderNoIngredientsTest {
 
 
         CreateOrder order = new CreateOrder(ingredients);
-        Response response = given()
-                .header("Content-type", "application/json")
-                .header("Authorization", authorizationToken)
-                .and()
-                .body(order)
-                .when()
-                .post(EndPoints.ORDERS);
+        Response response = OrderClient.createOrderAuthorized(authorizationToken, order);
         response.then().assertThat()
                 .statusCode(400);
         response.then().assertThat().body("message", equalTo("Ingredient ids must be provided"));
     }
     @After
-    public void DeleteUser()  {
-        DeleteUser delete = new DeleteUser(email,password);
-        given()
-                .header("Authorization", authorizationToken)
-                .body(delete)
-                .delete(EndPoints.USER);
+    public void deleteUser()  {
+        UserClient.deleteUser(authorizationToken);
 
     }
 
