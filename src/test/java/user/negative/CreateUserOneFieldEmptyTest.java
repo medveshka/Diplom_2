@@ -1,23 +1,23 @@
-package userTests.positiveTests;
+package userTests.negativeTests;
 
+import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.equalTo;
-import io.qameta.allure.junit4.DisplayName;
-
+import org.example.constantsAPI.EndPoints;
+import org.example.generators.GenerateUserData;
+import org.example.models.user.CreateUser;
+import org.example.models.user.DeleteUser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.example.generators.generateUserData;
-import org.example.constantsAPI.EndPoints;
-import org.example.models.user.CreateUser;
-import org.example.models.user.DeleteUser;
 
-public class CreateUserTest {
-    public String email = generateUserData.generateEmail();
-    public String password = generateUserData.generatePassword();
-    public String name = generateUserData.generateName();
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.equalTo;
+
+public class CreateUserOneFieldEmptyTest {
+    public String email = GenerateUserData.generateEmail();
+    public String password = "";
+    public String name = GenerateUserData.generateName();
     public String authorizationToken;
 
     @Before
@@ -26,8 +26,8 @@ public class CreateUserTest {
     }
 
     @Test
-    @DisplayName("Создание нового пользователя")
-    public void createNewUser(){
+    @DisplayName("Невозможно создать нового пользователя - не заполнено поле логин")
+    public void CreateUserEmptyEmail(){
         CreateUser createdUser = new CreateUser(email,password, name);
         Response response = given()
                 .header("Content-type", "application/json")
@@ -36,8 +36,8 @@ public class CreateUserTest {
                 .when()
                 .post(EndPoints.REGISTER);
         response.then().assertThat()
-                .statusCode(200);
-        response.then().assertThat().body("success", equalTo(true));
+                .statusCode(403);
+        response.then().assertThat().body("message", equalTo("Email, password and name are required fields"));
         authorizationToken = response.then().extract().body().path("accessToken");
     }
 
@@ -45,11 +45,13 @@ public class CreateUserTest {
 
     @After
     public void DeleteUser()  {
+        if (authorizationToken != null) {
         DeleteUser delete = new DeleteUser(email,password);
         given()
                 .header("Authorization", authorizationToken)
                 .body(delete)
                 .delete(EndPoints.USER);
 
+    }
     }
 }

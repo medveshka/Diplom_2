@@ -4,7 +4,7 @@ import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.example.constantsAPI.EndPoints;
-import org.example.generators.generateUserData;
+import org.example.generators.GenerateUserData;
 import org.example.models.order.CreateOrder;
 import org.example.models.user.CreateUser;
 import org.example.models.user.DeleteUser;
@@ -20,9 +20,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 
 
 public class CreateOrderNoIngredientsTest {
-    public String email = generateUserData.generateEmail();
-    public String password = generateUserData.generatePassword();
-    public String name = generateUserData.generateName();
+    public String email = GenerateUserData.generateEmail();
+    public String password = GenerateUserData.generatePassword();
+    public String name = GenerateUserData.generateName();
     public String authorizationToken;
 
     @Before

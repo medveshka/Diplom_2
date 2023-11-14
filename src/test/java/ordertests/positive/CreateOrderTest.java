@@ -1,28 +1,30 @@
 package orderTests.positiveTests;
 
-import io.qameta.allure.junit4.DisplayName;
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
 import org.example.constantsAPI.EndPoints;
-import org.example.generators.generateUserData;
+import org.example.generators.GenerateUserData;
 import org.example.models.order.CreateOrder;
 import org.example.models.user.CreateUser;
 import org.example.models.user.DeleteUser;
+import org.junit.Test;
+
+import io.qameta.allure.junit4.DisplayName;
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 
 
-public class GetOrderTest {
-    public String email = generateUserData.generateEmail();
-    public String password = generateUserData.generatePassword();
-    public String name = generateUserData.generateName();
+public class CreateOrderTest {
+    public String email = GenerateUserData.generateEmail();
+    public String password = GenerateUserData.generatePassword();
+    public String name = GenerateUserData.generateName();
     public String authorizationToken;
 
     @Before
@@ -35,9 +37,17 @@ public class GetOrderTest {
                 .body(createdUser)
                 .when()
                 .post(EndPoints.REGISTER);
+        response.then().assertThat()
+                .statusCode(200);
+        response.then().assertThat().body("success", equalTo(true));
         authorizationToken = response.then().extract().body().path("accessToken");
+    }
 
 
+
+    @Test
+    @DisplayName("Создание заказа c авторизаций и списком ингредиентов")
+    public void createOrderIngredientsAuthorizedUser(){
         String bun = given()
                 .get(EndPoints.INGREDIENTS)
                 .then().extract().body().path("data[0]._id");
@@ -56,28 +66,16 @@ public class GetOrderTest {
 
 
         CreateOrder order = new CreateOrder(ingredients);
-        given()
+        Response response = given()
                 .header("Content-type", "application/json")
                 .header("Authorization", authorizationToken)
                 .and()
                 .body(order)
                 .when()
                 .post(EndPoints.ORDERS);
-    }
-
-
-    @Test
-    @DisplayName("Получение заказа")
-    public void getOrdersTest(){
-
-        Response response = given()
-                .header("Authorization", authorizationToken)
-                .get(EndPoints.ORDERS);
         response.then().assertThat()
                 .statusCode(200);
         response.then().assertThat().body("success", equalTo(true));
-
-
     }
     @After
     public void DeleteUser()  {

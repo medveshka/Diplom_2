@@ -4,7 +4,7 @@ import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.example.constantsAPI.EndPoints;
-import org.example.generators.generateUserData;
+import org.example.generators.GenerateUserData;
 import org.example.models.user.CreateUser;
 import org.example.models.user.DeleteUser;
 import org.example.models.user.UpdateUser;
@@ -16,9 +16,9 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 public class UpdateUserTest {
-    public String email = generateUserData.generateEmail();
-    public String password = generateUserData.generatePassword();
-    public String name = generateUserData.generateName();
+    public String email = GenerateUserData.generateEmail();
+    public String password = GenerateUserData.generatePassword();
+    public String name = GenerateUserData.generateName();
     public String authorizationToken;
 
     @Before
@@ -40,7 +40,7 @@ public class UpdateUserTest {
     @Test
     @DisplayName("Обновление имени для авторизованного пользователя")
     public void updateNameAuthorizedUser(){
-        String name = generateUserData.generateName() + "лол";
+        String name = GenerateUserData.generateName() + "лол";
         UpdateUser updatedUser = new UpdateUser(email, password, name);
         Response response = given()
                 .header("Content-type", "application/json")
@@ -59,7 +59,7 @@ public class UpdateUserTest {
     @Test
     @DisplayName("Обновление почты для авторизованного пользователя")
     public void updateEmailAuthorizedUser(){
-        String email = generateUserData.generateEmail() + ".pl";
+        String email = GenerateUserData.generateEmail() + ".pl";
         UpdateUser updatedUser = new UpdateUser(email, password, name);
         Response response = given()
                 .header("Content-type", "application/json")
@@ -78,7 +78,7 @@ public class UpdateUserTest {
     @Test
     @DisplayName("Обновление пароля для авторизованного пользователя")
     public void updatePasswordAuthorizedUser(){
-        String password = generateUserData.generatePassword() + "@";
+        String password = GenerateUserData.generatePassword() + "@";
         UpdateUser updatedUser = new UpdateUser(email, password, name);
         Response response = given()
                 .header("Content-type", "application/json")

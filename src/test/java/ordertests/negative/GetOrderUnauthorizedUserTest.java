@@ -4,7 +4,7 @@ import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.example.constantsAPI.EndPoints;
-import org.example.generators.generateUserData;
+import org.example.generators.GenerateUserData;
 import org.example.models.order.CreateOrder;
 import org.example.models.user.CreateUser;
 import org.example.models.user.DeleteUser;
@@ -19,17 +19,25 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 
-public class CreateOrderUnauthorizedTest {
+public class GetOrderUnauthorizedUserTest {
+    public String email = GenerateUserData.generateEmail();
+    public String password = GenerateUserData.generatePassword();
+    public String name = GenerateUserData.generateName();
+    public String authorizationToken;
 
     @Before
-    public void createNewUser() {
+    public void createNewUser(){
         RestAssured.baseURI = EndPoints.BASE_URL;
-    }
+        CreateUser createdUser = new CreateUser(email,password, name);
+        Response response = given()
+                .header("Content-type", "application/json")
+                .and()
+                .body(createdUser)
+                .when()
+                .post(EndPoints.REGISTER);
+        authorizationToken = response.then().extract().body().path("accessToken");
 
 
-    @Test
-    @DisplayName("Создание заказа c авторизаций и списком ингредиентов")
-    public void createOrderIngredientsAuthorizedUser(){
         String bun = given()
                 .get(EndPoints.INGREDIENTS)
                 .then().extract().body().path("data[0]._id");
@@ -48,17 +56,37 @@ public class CreateOrderUnauthorizedTest {
 
 
         CreateOrder order = new CreateOrder(ingredients);
-        Response response = given()
+        given()
                 .header("Content-type", "application/json")
+                .header("Authorization", authorizationToken)
                 .and()
                 .body(order)
                 .when()
                 .post(EndPoints.ORDERS);
-        response.then().assertThat()
-                .statusCode(401);
-        response.then().assertThat().body("success", equalTo(true));
     }
 
+
+    @Test
+    @DisplayName("Получение заказа")
+    public void GetOrderUnauthorizedTest(){
+
+        Response response = given()
+                .get(EndPoints.ORDERS);
+        response.then().assertThat()
+                .statusCode(401);
+        response.then().assertThat().body("message", equalTo("You should be authorised"));
+
+
+    }
+    @After
+    public void DeleteUser()  {
+        DeleteUser delete = new DeleteUser(email,password);
+        given()
+                .header("Authorization", authorizationToken)
+                .body(delete)
+                .delete(EndPoints.USER);
+
+    }
 
 
 }
